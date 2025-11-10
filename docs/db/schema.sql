@@ -1,0 +1,1 @@
+-- Aqui va a estar el contenido del schema.sql
