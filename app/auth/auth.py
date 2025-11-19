@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from pydantic import BaseModel
 
-from app.models.users import UserBase
+from app.models import UserBase
 
 SECRET_KEY = "1234567890"
 ALGORITHM = "HS256"
