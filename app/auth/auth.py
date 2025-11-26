@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 import bcrypt
 
 from datetime import datetime, timedelta
@@ -7,7 +8,7 @@ from pydantic import BaseModel
 
 from app.models import UserBase
 
-SECRET_KEY = "1234567890"
+SECRET_KEY = "14c7a09195553aba788d36045d47c2dac68180c8d644eb0902db1ed2433f481b"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MIN = 7 * 24 * 60
 
@@ -27,7 +28,7 @@ def get_hash_password(plain_pw: str) -> str:
     pw_bytes = plain_pw.encode("utf-8")
     salt = bcrypt.gensalt()
     hashed_pw = bcrypt.hashpw(password=pw_bytes, salt=salt)
-    return hashed_pw
+    return hashed_pw.decode("utf-8")
 
 
 def verify_password(plain_pw, hashed_pw) -> bool:
