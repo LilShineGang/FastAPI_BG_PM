@@ -1,7 +1,7 @@
-from pydantic import basemodel 
+from pydantic import BaseModel
 
 class UserBase(BaseModel):
-    nickname:str
+    username:str
     password:str
 
 class UserIn(UserBase):
@@ -10,8 +10,13 @@ class UserIn(UserBase):
 class UserDb(UserIn):
     id:int
 
-class UserLogin(UserBase):
-    pass
+class UserOut(BaseModel):
+    id:int
+    name:str
+    username:str
+
+#class UserLoginIn(UserBase):
+#    pass
     
 class TokenOut(BaseModel):
     token:str
