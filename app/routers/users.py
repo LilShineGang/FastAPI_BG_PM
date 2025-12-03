@@ -17,7 +17,7 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from fastapi import APIRouter, status, HTTPException, Header, Depends
 from dataclasses import dataclass
 from fastapi import APIRouter, status, HTTPException
-from app.database import users
+from app.database import insert_user, users
 from app.auth.auth import create_access_token, Token, verify_password, decode_token, oauth2_scheme, TokenData
 
 
@@ -29,12 +29,20 @@ router = APIRouter(
 @router.post("/signup/", status_code=status.HTTP_201_CREATED, response_model=UserOut)
 async def create_user(userIn:UserIn):
     usersFound = [u for u in users if u.username == userIn.username]
-    if len(usersFound) > 0:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Username already exists"
-        )
+    # if len(usersFound) > 0:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_409_CONFLICT,
+    #         detail="Username already exists"
+    #     )
 
+    insert_user (
+        UserDb (
+            name=userIn.name,
+            username=userIn.username,
+            password=userIn.password
+        )
+    )
+'''
     user_db = UserDb(
         id=len(users)+1,
         name=userIn.name,
@@ -42,7 +50,7 @@ async def create_user(userIn:UserIn):
         password=userIn.password
     )
     users.append(user_db)
-
+'''
 @router.post(
     "/login/",
     response_model=Token,
