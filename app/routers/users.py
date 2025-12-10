@@ -34,14 +34,28 @@ async def create_user(userIn:UserIn):
     #         status_code=status.HTTP_409_CONFLICT,
     #         detail="Username already exists"
     #     )
-
+    
+    '''
     insert_user (
         UserDb (
+            id = len(users)+1, # ??
             name=userIn.name,
             username=userIn.username,
             password=userIn.password
         )
     )
+    # no me sale con esto va a ser con lo de abajo
+    '''
+    
+    new_user = UserDb (
+            id = len(users)+1, # ??
+            name=userIn.name,
+            username=userIn.username,
+            password=userIn.password
+        )
+    insert_user(new_user)
+    return new_user
+
 '''
     user_db = UserDb(
         id=len(users)+1,
@@ -96,20 +110,18 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 #    return TokenOut(token=token_str)
 
 # Get all users
-@router.get(
-    "/",
-    response_model=list[UserOut],
-    status_code=status.HTTP_200_OK
-)
+#@router.get(
+#    "/",
+#    response_model=list[UserOut],
+#    status_code=status.HTTP_200_OK
+#)
 #        token=f"mytoken:{user.nickname}-{user.name}",
-    
 
 # Get all users
 @router.get("/",response_model=list[UserOut] ,status_code=status.HTTP_200_OK)
 async def get_all_users(token : str = Depends(oauth2_scheme)):
     data: TokenData = decode_token(token)
-    
-    
+
     if data.username not in [u.username for u in users]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -121,9 +133,61 @@ async def get_all_users(token : str = Depends(oauth2_scheme)):
         for UserDb in users
     ]
 
-
-#    print(token)
+# Perfil del usuario logueado
+@router.get("/me/", response_model=UserOut)
+async def read_users_me(token: str = Depends(oauth2_scheme)):
+    # Decodificamos el token para saber quién pregunta
+    data: TokenData = decode_token(token)
     
+    # Buscamos al usuario en la lista
+    user_found = next((u for u in users if u.username == data.username), None)
+    
+    if user_found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+        
+    return UserOut(id=user_found.id, name=user_found.name, username=user_found.username)
+
+
+# Buscar usuario por username
+@router.get("/{username}/", response_model=UserOut)
+async def read_user(username: str, token: str = Depends(oauth2_scheme)):
+    # Verificamos token
+    decode_token(token)
+    
+    user_found = next((u for u in users if u.username == username), None)
+    
+    if user_found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User {username} not found"
+        )
+    
+    return UserOut(id=user_found.id, name=user_found.name, username=user_found.username)
+
+
+# Borrar usuario
+@router.delete("/{username}/", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(username: str, token: str = Depends(oauth2_scheme)):
+    # Verificamos que quien pide borrar esté autenticado
+    data: TokenData = decode_token(token)
+
+    user_found = next((u for u in users if u.username == username), None)
+    
+    if user_found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    users.remove(user_found)
+    return None # 204
+
+# --------------------------------------------------------------
+#    print(token)
+#
 #    if token is None:
 #        raise HTTPException(
 #            status_code=status.HTTP_403_FORBIDDEN,
@@ -149,7 +213,7 @@ async def get_all_users(token : str = Depends(oauth2_scheme)):
 #            status_code=status.HTTP_403_FORBIDDEN,
 #            detail="Forbidden"
 #        )
-    #tecnicamente es lo mismo que: "return users" ya que FastAPI se encarga de hacer el filtrado poniendole el response_model
+# mas o menos lo mismo que: "return users" ya que FastAPI se encarga de hacer el filtrado poniendole el response_model
 
 '''
 
