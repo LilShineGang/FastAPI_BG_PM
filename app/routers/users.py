@@ -17,8 +17,8 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from fastapi import APIRouter, status, HTTPException, Header, Depends
 from dataclasses import dataclass
 from fastapi import APIRouter, status, HTTPException
-from app.database import insert_user, users
-from app.auth.auth import create_access_token, Token, verify_password, decode_token, oauth2_scheme, TokenData
+from app.database import insert_user, get_user_by_username, get_all_users, delete_user_by_username
+from app.auth.auth import create_access_token, Token, verify_password, decode_token, oauth2_scheme, TokenData, get_hash_password
 
 
 router = APIRouter(
@@ -27,44 +27,31 @@ router = APIRouter(
 )
 
 @router.post("/signup/", status_code=status.HTTP_201_CREATED, response_model=UserOut)
-async def create_user(userIn:UserIn):
-    usersFound = [u for u in users if u.username == userIn.username]
-    # if len(usersFound) > 0:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_409_CONFLICT,
-    #         detail="Username already exists"
-    #     )
+async def create_user(user_in: UserIn):
+    # Verificar si el usuario ya existe en la base de datos
+    existing_user = get_user_by_username(user_in.username)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already exists"
+        )
     
-    '''
-    insert_user (
-        UserDb (
-            id = len(users)+1, # ??
-            name=userIn.name,
-            username=userIn.username,
-            password=userIn.password
+    # Hash de la contraseña
+    hashed_password = get_hash_password(user_in.password)
+    
+    # Insertar usuario en la base de datos
+    user_id = insert_user(
+        UserDb(
+            id=0,  # El ID será generado por la base de datos
+            name=user_in.name,
+            username=user_in.username,
+            email=user_in.email,
+            password=hashed_password,
+            image=user_in.image
         )
     )
-    # no me sale con esto va a ser con lo de abajo
-    '''
     
-    new_user = UserDb (
-            id = len(users)+1, # ??
-            name=userIn.name,
-            username=userIn.username,
-            password=userIn.password
-        )
-    insert_user(new_user)
-    return new_user
-
-'''
-    user_db = UserDb(
-        id=len(users)+1,
-        name=userIn.name,
-        username=userIn.username,
-        password=userIn.password
-    )
-    users.append(user_db)
-'''
+    return UserOut(id=user_id, name=user_in.name, username=user_in.username, email=user_in.email, image=user_in.image)
 @router.post(
     "/login/",
     response_model=Token,
@@ -84,17 +71,15 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             detail="Nickname and/or password missing"
         )
 
-    # 2. Buscar el usuario en la "base de datos"
-    usersFound = [u for u in users if u.username == username]
-    if not usersFound:
+    # 2. Buscar el usuario en la base de datos
+    user = get_user_by_username(username)
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Username and/or password incorrect"
         )
-    user: UserDb = usersFound[0]
 
     # 3. Compruebo contraseñas
-    user:UserDb = usersFound[0]
     if not verify_password(password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -118,19 +103,23 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 #        token=f"mytoken:{user.nickname}-{user.name}",
 
 # Get all users
-@router.get("/",response_model=list[UserOut] ,status_code=status.HTTP_200_OK)
-async def get_all_users(token : str = Depends(oauth2_scheme)):
+@router.get("/", response_model=list[UserOut], status_code=status.HTTP_200_OK)
+async def get_users(token: str = Depends(oauth2_scheme)):
     data: TokenData = decode_token(token)
 
-    if data.username not in [u.username for u in users]:
+    # Verificar que el usuario esté autenticado
+    user = get_user_by_username(data.username)
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Forbidden"
         )
 
+    # Obtener todos los usuarios de la base de datos
+    all_users = get_all_users()
     return [
-        UserOut(id=UserDb.id, name=UserDb.name, username=UserDb.username)
-        for UserDb in users
+        UserOut(id=userDb.id, name=userDb.name, username=userDb.username, email=userDb.email, image=userDb.image)
+        for userDb in all_users
     ]
 
 # Perfil del usuario logueado
@@ -139,8 +128,8 @@ async def read_users_me(token: str = Depends(oauth2_scheme)):
     # Decodificamos el token para saber quién pregunta
     data: TokenData = decode_token(token)
     
-    # Buscamos al usuario en la lista
-    user_found = next((u for u in users if u.username == data.username), None)
+    # Buscamos al usuario en la base de datos
+    user_found = get_user_by_username(data.username)
     
     if user_found is None:
         raise HTTPException(
@@ -148,7 +137,7 @@ async def read_users_me(token: str = Depends(oauth2_scheme)):
             detail="User not found"
         )
         
-    return UserOut(id=user_found.id, name=user_found.name, username=user_found.username)
+    return UserOut(id=user_found.id, name=user_found.name, username=user_found.username, email=user_found.email, image=user_found.image)
 
 
 # Buscar usuario por username
@@ -157,7 +146,7 @@ async def read_user(username: str, token: str = Depends(oauth2_scheme)):
     # Verificamos token
     decode_token(token)
     
-    user_found = next((u for u in users if u.username == username), None)
+    user_found = get_user_by_username(username)
     
     if user_found is None:
         raise HTTPException(
@@ -165,16 +154,16 @@ async def read_user(username: str, token: str = Depends(oauth2_scheme)):
             detail=f"User {username} not found"
         )
     
-    return UserOut(id=user_found.id, name=user_found.name, username=user_found.username)
+    return UserOut(id=user_found.id, name=user_found.name, username=user_found.username, email=user_found.email, image=user_found.image)
 
 
 # Borrar usuario
 @router.delete("/{username}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(username: str, token: str = Depends(oauth2_scheme)):
     # Verificamos que quien pide borrar esté autenticado
-    data: TokenData = decode_token(token)
+    decode_token(token)
 
-    user_found = next((u for u in users if u.username == username), None)
+    user_found = get_user_by_username(username)
     
     if user_found is None:
         raise HTTPException(
@@ -182,8 +171,15 @@ async def delete_user(username: str, token: str = Depends(oauth2_scheme)):
             detail="User not found"
         )
     
-    users.remove(user_found)
-    return None # 204
+    # Eliminar usuario de la base de datos
+    deleted = delete_user_by_username(username)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete user"
+        )
+    
+    return None  # 204
 
 # --------------------------------------------------------------
 #    print(token)
