@@ -2,7 +2,7 @@
 
 -- Tabla de usuarios con todos los campos
 CREATE TABLE users (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id_user INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
@@ -25,12 +25,6 @@ CREATE TABLE chat (
     FOREIGN KEY (id_mi) REFERENCES messages_instance(id_mi)
 );
 
-CREATE TABLE achievement (
-    id_achievement INT PRIMARY KEY AUTO_INCREMENT,
-    difficulty VARCHAR(50) NOT NULL,
-    description TEXT NOT NULL
-);
-
 CREATE TABLE games (
     id_game INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
@@ -39,9 +33,15 @@ CREATE TABLE games (
     rating DECIMAL(3,2),
     image VARCHAR(255),
     category VARCHAR(50) NOT NULL,
-    id_achievement INT,
-    UNIQUE (name),
-    FOREIGN KEY (id_achievement) REFERENCES achievement(id_achievement)
+    UNIQUE (name)
+);
+
+CREATE TABLE achievement (
+    id_achievement INT PRIMARY KEY AUTO_INCREMENT,
+    difficulty VARCHAR(50) NOT NULL,
+    description TEXT NOT NULL,
+    id_game INT NOT NULL,
+    FOREIGN KEY (id_game) REFERENCES games(id_game)
 );
 
 CREATE TABLE forums (
