@@ -10,10 +10,10 @@ class UserIn(UserBase):
     image:str | None = None
 
 class UserDb(UserIn):
-    id:int
+    id_user:int
 
 class UserOut(BaseModel):
-    id:int
+    id_user:int
     name:str
     username:str
     email:str
@@ -24,3 +24,27 @@ class UserOut(BaseModel):
     
 class TokenOut(BaseModel):
     token:str
+
+# Game Models
+class GameBase(BaseModel):
+    name: str
+    gender: str
+    difficulty: str
+    category: str
+    rating: float | None = None
+    image: str | None = None
+
+class GameIn(GameBase):
+    pass
+
+class GameDb(GameBase):
+    id_game: int
+
+class GameOut(BaseModel):
+    id_game: int
+    name: str
+    gender: str
+    difficulty: str
+    rating: float | None = None
+    image: str | None = None
+    category: str

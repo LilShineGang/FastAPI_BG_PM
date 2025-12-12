@@ -42,7 +42,7 @@ async def create_user(user_in: UserIn):
     # Insertar usuario en la base de datos
     user_id = insert_user(
         UserDb(
-            id=0,  # El ID será generado por la base de datos
+            id_user=0,  # El ID será generado por la base de datos
             name=user_in.name,
             username=user_in.username,
             email=user_in.email,
@@ -51,7 +51,7 @@ async def create_user(user_in: UserIn):
         )
     )
     
-    return UserOut(id=user_id, name=user_in.name, username=user_in.username, email=user_in.email, image=user_in.image)
+    return UserOut(id_user=user_id, name=user_in.name, username=user_in.username, email=user_in.email, image=user_in.image)
 @router.post(
     "/login/",
     response_model=Token,
@@ -118,7 +118,7 @@ async def get_users(token: str = Depends(oauth2_scheme)):
     # Obtener todos los usuarios de la base de datos
     all_users = get_all_users()
     return [
-        UserOut(id=userDb.id, name=userDb.name, username=userDb.username, email=userDb.email, image=userDb.image)
+        UserOut(id_user=userDb.id_user, name=userDb.name, username=userDb.username, email=userDb.email, image=userDb.image)
         for userDb in all_users
     ]
 
@@ -137,7 +137,7 @@ async def read_users_me(token: str = Depends(oauth2_scheme)):
             detail="User not found"
         )
         
-    return UserOut(id=user_found.id, name=user_found.name, username=user_found.username, email=user_found.email, image=user_found.image)
+    return UserOut(id_user=user_found.id_user, name=user_found.name, username=user_found.username, email=user_found.email, image=user_found.image)
 
 
 # Buscar usuario por username
@@ -154,7 +154,7 @@ async def read_user(username: str, token: str = Depends(oauth2_scheme)):
             detail=f"User {username} not found"
         )
     
-    return UserOut(id=user_found.id, name=user_found.name, username=user_found.username, email=user_found.email, image=user_found.image)
+    return UserOut(id_user=user_found.id_user, name=user_found.name, username=user_found.username, email=user_found.email, image=user_found.image)
 
 
 # Borrar usuario
