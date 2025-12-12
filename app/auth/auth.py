@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 import bcrypt
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from pydantic import BaseModel
@@ -31,14 +31,14 @@ def get_hash_password(plain_pw: str) -> str:
     return hashed_pw.decode("utf-8")
 
 
-def verify_password(plain_pw, hashed_pw) -> bool:
+def verify_password(plain_pw: str, hashed_pw: str) -> bool:
     plain_pw_bytes = plain_pw.encode("utf-8")
     hashed_pw_bytes = hashed_pw.encode("utf-8")
     return bcrypt.checkpw(password=plain_pw_bytes, hashed_password=hashed_pw_bytes)
 
 
 def create_access_token(user: UserBase) -> Token:
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MIN)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MIN)
     to_encode = {"sub": user.username, "exp": expire}
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return Token(access_token=encoded_jwt, token_type="bearer")
