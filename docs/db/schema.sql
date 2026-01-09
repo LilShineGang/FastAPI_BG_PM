@@ -50,38 +50,42 @@ CREATE TABLE forums (
     id_game INT NULL,
     id_user INT NULL,
     FOREIGN KEY (id_game) REFERENCES games(id_game) ON DELETE SET NULL,
-    FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE SET NULL
+    FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE SET NULL
 );
+
 
 CREATE TABLE user_messages_instance (
     id_user INT NOT NULL,
     id_mi INT NOT NULL,
     PRIMARY KEY (id_user, id_mi),
-    FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE,
+    FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (id_mi) REFERENCES messages_instance(id_mi) ON DELETE CASCADE
 );
+
 
 CREATE TABLE user_forum (
     id_user INT NOT NULL,
     id_forum INT NOT NULL,
     PRIMARY KEY (id_user, id_forum),
-    FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE,
+    FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (id_forum) REFERENCES forums(id_forum) ON DELETE CASCADE
 );
+
 
 CREATE TABLE user_game (
     id_user INT NOT NULL,
     id_game INT NOT NULL,
     PRIMARY KEY (id_user, id_game),
-    FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE,
+    FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (id_game) REFERENCES games(id_game) ON DELETE CASCADE
 );
+
 
 CREATE TABLE user_achievement (
     id_user INT NOT NULL,
     id_achievement INT NOT NULL,
     PRIMARY KEY (id_user, id_achievement),
-    FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE,
+    FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (id_achievement) REFERENCES achievement(id_achievement) ON DELETE CASCADE
 );
 
@@ -123,6 +127,7 @@ CREATE TABLE wiki (
     FOREIGN KEY (id_forum) REFERENCES forums(id_forum) ON DELETE SET NULL
 );
 
+
 CREATE TABLE discussion (
     id_discussion INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
@@ -132,8 +137,9 @@ CREATE TABLE discussion (
     id_forum INT NULL,
     id_user INT NULL,
     FOREIGN KEY (id_forum) REFERENCES forums(id_forum) ON DELETE SET NULL,
-    FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE SET NULL
+    FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE SET NULL
 );
+
 
 CREATE TABLE groups_table (
     id_group INT PRIMARY KEY AUTO_INCREMENT,
@@ -143,14 +149,15 @@ CREATE TABLE groups_table (
     image VARCHAR(255),
     id_forum INT NULL,
     FOREIGN KEY (id_forum) REFERENCES forums(id_forum) ON DELETE SET NULL,
-    FOREIGN KEY (admin) REFERENCES users(id_user) ON DELETE RESTRICT
+    FOREIGN KEY (admin) REFERENCES users(id) ON DELETE RESTRICT
 );
+
 
 CREATE TABLE user_group (
     id_user INT NOT NULL,
     id_group INT NOT NULL,
     PRIMARY KEY (id_user, id_group),
-    FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE,
+    FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (id_group) REFERENCES groups_table(id_group) ON DELETE CASCADE
 );
 
