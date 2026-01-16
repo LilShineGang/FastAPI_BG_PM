@@ -1,4 +1,5 @@
 # este va a ser el docker-compose.yml
+#docker compose logs myapi --follow (Para ver los logs de myapi)
 services:
   myapi:
     build:

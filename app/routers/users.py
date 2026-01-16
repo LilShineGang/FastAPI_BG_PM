@@ -17,7 +17,8 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from fastapi import APIRouter, status, HTTPException, Header, Depends
 from dataclasses import dataclass
 from fastapi import APIRouter, status, HTTPException
-from app.database import insert_user, get_user_by_username, get_all_users, delete_user_by_username
+from app.database import insert_user, get_user_by_username, get_all_users, delete_user_by_username, insert_game
+
 from app.auth.auth import create_access_token, Token, verify_password, decode_token, oauth2_scheme, TokenData, get_hash_password
 
 
