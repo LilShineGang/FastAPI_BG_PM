@@ -48,11 +48,11 @@ async def create_user(user_in: UserIn):
             username=user_in.username,
             email=user_in.email,
             password=hashed_password,
-            image=user_in.image
+            image=user_in.image,
+            role=user_in.role if hasattr(user_in, 'role') else 'user'
         )
     )
-    
-    return UserOut(id=user_id, name=user_in.name, username=user_in.username, email=user_in.email, image=user_in.image)
+    return UserOut(id=user_id, name=user_in.name, username=user_in.username, email=user_in.email, image=user_in.image, role=user_in.role if hasattr(user_in, 'role') else 'user')
 @router.post(
     "/login/",
     response_model=Token,
@@ -119,7 +119,7 @@ async def get_users(token: str = Depends(oauth2_scheme)):
     # Obtener todos los usuarios de la base de datos
     all_users = get_all_users()
     return [
-        UserOut(id=userDb.id, name=userDb.name, username=userDb.username, email=userDb.email, image=userDb.image)
+        UserOut(id=userDb.id, name=userDb.name, username=userDb.username, email=userDb.email, image=userDb.image, role=userDb.role)
         for userDb in all_users
     ]
 
@@ -138,7 +138,7 @@ async def read_users_me(token: str = Depends(oauth2_scheme)):
             detail="User not found"
         )
         
-    return UserOut(id=user_found.id, name=user_found.name, username=user_found.username, email=user_found.email, image=user_found.image)
+    return UserOut(id=user_found.id, name=user_found.name, username=user_found.username, email=user_found.email, image=user_found.image, role=user_found.role)
 
 
 # Buscar usuario por username
@@ -155,7 +155,7 @@ async def read_user(username: str, token: str = Depends(oauth2_scheme)):
             detail=f"User {username} not found"
         )
     
-    return UserOut(id=user_found.id, name=user_found.name, username=user_found.username, email=user_found.email, image=user_found.image)
+    return UserOut(id=user_found.id, name=user_found.name, username=user_found.username, email=user_found.email, image=user_found.image, role=user_found.role)
 
 
 # Borrar usuario

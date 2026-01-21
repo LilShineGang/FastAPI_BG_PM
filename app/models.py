@@ -1,3 +1,13 @@
+# --- Forum models ---
+class ForumIn(BaseModel):
+    name: str
+    game_name: str
+
+class ForumOut(BaseModel):
+    id_forum: int
+    name: str
+    id_game: int | None = None
+    id_user: int | None = None
 from pydantic import BaseModel
 
 class UserBase(BaseModel):
@@ -8,6 +18,7 @@ class UserIn(UserBase):
     name:str
     email:str
     image:str | None = None
+    role: str = 'user'
 
 class UserDb(UserIn):
     id:int
@@ -18,6 +29,7 @@ class UserOut(BaseModel):
     username:str
     email:str
     image:str | None = None
+    role: str
 
 #class UserLoginIn(UserBase):
 #    pass
