@@ -1,3 +1,5 @@
+from pydantic import BaseModel
+
 # --- Forum models ---
 class ForumIn(BaseModel):
     name: str
@@ -8,7 +10,6 @@ class ForumOut(BaseModel):
     name: str
     id_game: int | None = None
     id_user: int | None = None
-from pydantic import BaseModel
 
 class UserBase(BaseModel):
     username:str
