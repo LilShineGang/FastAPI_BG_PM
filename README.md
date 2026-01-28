@@ -1,1 +1,1 @@
-FastApi del proyecto PManager hecho por Javier Pomares y Blagovest Doukov.
+Backend  del proyecto PManager hecho por Javier Pomares y Blagovest Doukov + FastApi.
