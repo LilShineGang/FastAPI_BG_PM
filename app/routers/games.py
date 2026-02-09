@@ -83,7 +83,7 @@ async def read_all_games(token: str = Depends(oauth2_scheme)):
         for db_game in all_games
     ]
 
-@router.put("/{game_id}", response_model=GameOut, status_code=status.HTTP_200_OK)
+@router.put("/{id}/", response_model=GameOut, status_code=status.HTTP_200_OK)
 async def update_game(game_id: int, game_in: GameIn, token: str = Depends(oauth2_scheme)):
     data: TokenData = decode_token(token)
     from app.database import update_game_by_id, get_game_by_name
@@ -111,7 +111,7 @@ async def update_game(game_id: int, game_in: GameIn, token: str = Depends(oauth2
         category=game_in.category
     )
 
-@router.delete("/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_game(game_id: int, token: str = Depends(oauth2_scheme)):
     data: TokenData = decode_token(token)
     from app.database import delete_game_by_id

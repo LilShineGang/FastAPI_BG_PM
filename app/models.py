@@ -83,3 +83,29 @@ class GuideOut(BaseModel):
     name: str
     difficulty: str
     category: str
+# --- Forum models ---
+class ForumIn(BaseModel):
+    name: str
+    game_name: str
+
+
+class ForumOut(BaseModel):
+    id_forum: int
+    name: str
+    id_game: int | None = None
+    id_user: int | None = None
+
+# --- Wiki models ---
+
+class WikiIn(BaseModel):
+    name: str
+    category: str
+    description: str
+    id_forum: int | None = None
+
+class WikiOut(BaseModel):
+    id_wiki: int
+    name: str
+    category: str
+    description: str
+    id_forum: int | None = None

@@ -22,14 +22,14 @@ async def create_forum(forum_in: ForumIn, token: str = Depends(oauth2_scheme)):
     return ForumOut(id_forum=forum_id, name=forum_in.name, id_game=game.id_game, id_user=user.id)
 
 # Obtener todos los foros de un juego
-@router.get("/game/{game_id}/", response_model=list[ForumOut])
+@router.get("/game/{id}/", response_model=list[ForumOut])
 async def get_forums(game_id: int, token: str = Depends(oauth2_scheme)):
     decode_token(token)
     forums = get_forums_by_game(game_id)
     return forums
 
 # Obtener un foro por id
-@router.get("/{forum_id}/", response_model=ForumOut)
+@router.get("/{id}/", response_model=ForumOut)
 async def get_forum(forum_id: int, token: str = Depends(oauth2_scheme)):
     decode_token(token)
     forum = get_forum_by_id(forum_id)
@@ -38,7 +38,7 @@ async def get_forum(forum_id: int, token: str = Depends(oauth2_scheme)):
     return forum
 
 # Eliminar un foro (solo el autor o admin)
-@router.delete("/{forum_id}/", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_forum(forum_id: int, token: str = Depends(oauth2_scheme)):
     data: TokenData = decode_token(token)
     user = get_user_by_username(data.username)
