@@ -1,9 +1,9 @@
-from fastapi import HTTPException, status
-import bcrypt
-
 from datetime import datetime, timedelta, timezone
+
+import bcrypt
+from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 from pydantic import BaseModel
 
 from app.models import UserBase
@@ -52,5 +52,5 @@ def decode_token(token: str) -> TokenData:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"}
+            headers={"WWW-Authenticate": "Bearer"},
         )
