@@ -1,6 +1,7 @@
 # --- Forum database functions ---
 from app.models import ForumIn, ForumOut
 
+
 def insert_forum(forum_in: ForumIn, id_user: int, id_game: int) -> int:
     with mariadb.connect(**db_config) as conn:
         with conn.cursor() as cursor:
@@ -10,23 +11,35 @@ def insert_forum(forum_in: ForumIn, id_user: int, id_game: int) -> int:
             conn.commit()
             return cursor.lastrowid
 
+
 def get_forum_by_id(forum_id: int) -> ForumOut | None:
     with mariadb.connect(**db_config) as conn:
         with conn.cursor() as cursor:
-            sql = "SELECT id_forum, name, id_game, id_user FROM forums WHERE id_forum = ?"
+            sql = (
+                "SELECT id_forum, name, id_game, id_user FROM forums WHERE id_forum = ?"
+            )
             cursor.execute(sql, (forum_id,))
             row = cursor.fetchone()
             if row:
-                return ForumOut(id_forum=row[0], name=row[1], id_game=row[2], id_user=row[3])
+                return ForumOut(
+                    id_forum=row[0], name=row[1], id_game=row[2], id_user=row[3]
+                )
             return None
+
 
 def get_forums_by_game(game_id: int) -> list[ForumOut]:
     with mariadb.connect(**db_config) as conn:
         with conn.cursor() as cursor:
-            sql = "SELECT id_forum, name, id_game, id_user FROM forums WHERE id_game = ?"
+            sql = (
+                "SELECT id_forum, name, id_game, id_user FROM forums WHERE id_game = ?"
+            )
             cursor.execute(sql, (game_id,))
             rows = cursor.fetchall()
-            return [ForumOut(id_forum=row[0], name=row[1], id_game=row[2], id_user=row[3]) for row in rows]
+            return [
+                ForumOut(id_forum=row[0], name=row[1], id_game=row[2], id_user=row[3])
+                for row in rows
+            ]
+
 
 def delete_forum_by_id(forum_id: int) -> bool:
     with mariadb.connect(**db_config) as conn:
@@ -35,23 +48,34 @@ def delete_forum_by_id(forum_id: int) -> bool:
             cursor.execute(sql, (forum_id,))
             conn.commit()
             return cursor.rowcount > 0
+
+
 import mariadb
-from app.models import UserDb, GameDb, GameIn
+
 from app.auth.auth import get_hash_password
+from app.models import GameDb, GameIn, UserDb
 
 db_config = {
-    "host": "myapidb",  
+    "host": "myapidb",
     "port": 3306,
     "user": "myapi",
     "password": "myapi",
-    "database": "myapi"
+    "database": "myapi",
 }
+
 
 def insert_user(user: UserDb) -> int | None:
     with mariadb.connect(**db_config) as conn:
         with conn.cursor() as cursor:
             sql = "insert into users (name, username, email, password, image, role) values (?, ?, ?, ?, ?, ?)"
-            values = (user.name, user.username, user.email, user.password, user.image, user.role)
+            values = (
+                user.name,
+                user.username,
+                user.email,
+                user.password,
+                user.image,
+                user.role,
+            )
             cursor.execute(sql, values)
             conn.commit()
             return cursor.lastrowid
@@ -64,7 +88,15 @@ def get_user_by_username(username: str) -> UserDb | None:
             cursor.execute(sql, (username,))
             row = cursor.fetchone()
             if row:
-                return UserDb(id=row[0], name=row[1], username=row[2], email=row[3], password=row[4], image=row[5], role=row[6])
+                return UserDb(
+                    id=row[0],
+                    name=row[1],
+                    username=row[2],
+                    email=row[3],
+                    password=row[4],
+                    image=row[5],
+                    role=row[6],
+                )
             return None
 
 
@@ -74,7 +106,18 @@ def get_all_users() -> list[UserDb]:
             sql = "select id, name, username, email, password, image, role from users"
             cursor.execute(sql)
             rows = cursor.fetchall()
-            return [UserDb(id=row[0], name=row[1], username=row[2], email=row[3], password=row[4], image=row[5], role=row[6]) for row in rows]
+            return [
+                UserDb(
+                    id=row[0],
+                    name=row[1],
+                    username=row[2],
+                    email=row[3],
+                    password=row[4],
+                    image=row[5],
+                    role=row[6],
+                )
+                for row in rows
+            ]
 
 
 def delete_user_by_username(username: str) -> bool:
@@ -87,19 +130,44 @@ def delete_user_by_username(username: str) -> bool:
 
 
 users: list[UserDb] = [
-    UserDb(id=1, name="dan", username="dan", email="dan@example.com", password=get_hash_password("dan"), image=None, role="admin"),
-    UserDb(id=2, name="pm", username="pm", email="pm@example.com", password=get_hash_password("pm"), image=None, role="user")
+    UserDb(
+        id=1,
+        name="dan",
+        username="dan",
+        email="dan@example.com",
+        password=get_hash_password("dan"),
+        image=None,
+        role="admin",
+    ),
+    UserDb(
+        id=2,
+        name="pm",
+        username="pm",
+        email="pm@example.com",
+        password=get_hash_password("pm"),
+        image=None,
+        role="user",
+    ),
 ]
+
 
 def insert_game(game: GameIn) -> int | None:
     with mariadb.connect(**db_config) as conn:
         with conn.cursor() as cursor:
             sql = "insert into games (name, gender, difficulty, rating, image, category) values (?, ?, ?, ?, ?, ?)"
-            values = (game.name, game.gender, game.difficulty, game.rating, game.image, game.category)
+            values = (
+                game.name,
+                game.gender,
+                game.difficulty,
+                game.rating,
+                game.image,
+                game.category,
+            )
             cursor.execute(sql, values)
             conn.commit()
             return cursor.lastrowid
-        
+
+
 def get_game_by_name(name: str) -> UserDb | None:
     with mariadb.connect(**db_config) as conn:
         with conn.cursor() as cursor:
@@ -107,9 +175,18 @@ def get_game_by_name(name: str) -> UserDb | None:
             cursor.execute(sql, (name,))
             row = cursor.fetchone()
             if row:
-                return GameDb(id_game=row[0], name=row[1], gender=row[2], difficulty=row[3], rating=row[4], image=row[5], category=row[6])
+                return GameDb(
+                    id_game=row[0],
+                    name=row[1],
+                    gender=row[2],
+                    difficulty=row[3],
+                    rating=row[4],
+                    image=row[5],
+                    category=row[6],
+                )
             return None
-        
+
+
 def get_all_game() -> list[GameDb]:
     with mariadb.connect(**db_config) as conn:
         with conn.cursor() as cursor:
@@ -124,18 +201,29 @@ def get_all_game() -> list[GameDb]:
                     difficulty=row[3],
                     rating=row[4],
                     image=row[5],
-                    category=row[6]
-                ) for row in rows
+                    category=row[6],
+                )
+                for row in rows
             ]
+
 
 def update_game_by_id(game_id: int, game_in: GameIn) -> bool:
     with mariadb.connect(**db_config) as conn:
         with conn.cursor() as cursor:
             sql = "UPDATE games SET name=?, gender=?, difficulty=?, rating=?, image=?, category=? WHERE id_game=?"
-            values = (game_in.name, game_in.gender, game_in.difficulty, game_in.rating, game_in.image, game_in.category, game_id)
+            values = (
+                game_in.name,
+                game_in.gender,
+                game_in.difficulty,
+                game_in.rating,
+                game_in.image,
+                game_in.category,
+                game_id,
+            )
             cursor.execute(sql, values)
             conn.commit()
             return cursor.rowcount > 0
+
 
 def delete_game_by_id(game_id: int) -> bool:
     with mariadb.connect(**db_config) as conn:
@@ -144,3 +232,68 @@ def delete_game_by_id(game_id: int) -> bool:
             cursor.execute(sql, (game_id,))
             conn.commit()
             return cursor.rowcount > 0
+
+
+# --- Guide database functions ---
+
+
+def get_guide_by_id(guide_id: int):
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "SELECT id_guide, name, difficulty, category, id_user, id_forum FROM guides WHERE id_guide = ?"
+            cursor.execute(sql, (guide_id,))
+            row = cursor.fetchone()
+            if row:
+                return {
+                    "id_guide": row[0],
+                    "name": row[1],
+                    "difficulty": row[2],
+                    "category": row[3],
+                    "id_user": row[4],
+                    "id_forum": row[5],
+                }
+            return None
+
+
+def insert_guide(guide_in, id_user, id_forum) -> int:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "INSERT INTO guides (name, difficulty, category, id_user, id_forum) VALUES (?, ?, ?, ?, ?)"
+            values = (
+                guide_in.name,
+                guide_in.difficulty,
+                guide_in.category,
+                id_user,
+                id_forum,
+            )
+            cursor.execute(sql, values)
+            conn.commit()
+            return cursor.lastrowid
+
+
+def delete_guide_by_id(guide_id: int) -> bool:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "DELETE FROM guides WHERE id_guide = ?"
+            cursor.execute(sql, (guide_id,))
+            conn.commit()
+            return cursor.rowcount > 0
+
+
+def get_guides_by_forum(forum_id: int) -> list[dict]:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "SELECT id_guide, name, difficulty, category, id_user, id_forum FROM guides WHERE id_forum = ?"
+            cursor.execute(sql, (forum_id,))
+            rows = cursor.fetchall()
+            return [
+                {
+                    "id_guide": row[0],
+                    "name": row[1],
+                    "difficulty": row[2],
+                    "category": row[3],
+                    "id_user": row[4],
+                    "id_forum": row[5],
+                }
+                for row in rows
+            ]
