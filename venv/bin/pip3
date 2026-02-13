@@ -1,4 +1,4 @@
-#!/home/dan/Escritorio/FastAPI_BG_PM/venv/bin/python3
+#!/home/dan/Escritorio/FastAPI_BG_PM/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
