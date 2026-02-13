@@ -71,6 +71,23 @@ class GameOut(BaseModel):
     category: str
 
 
+class AchievementIn(BaseModel):
+    difficulty: str
+    description: str
+    id_game: int | None = None
+
+# --- Archivements models ---
+class AchievementDb(AchievementIn):
+    id_achievement: int
+
+
+class AchievementOut(BaseModel):
+    id_achievement: int
+    difficulty: str
+    description: str
+    id_game: int | None = None
+
+# --- GUides models ---
 class GuideIn(BaseModel):
     name: str
     difficulty: str
@@ -108,4 +125,41 @@ class WikiOut(BaseModel):
     name: str
     category: str
     description: str
+    id_forum: int | None = None
+
+
+# --- Tier list models ---
+
+
+class TierListIn(BaseModel):
+    name: str
+    category: str
+    description: str
+    id_forum: int | None = None
+
+
+class TierListOut(BaseModel):
+    id_tl: int
+    name: str
+    category: str
+    description: str
+    id_forum: int | None = None
+
+
+# --- Groups models ---
+
+
+class GroupIn(BaseModel):
+    name: str
+    description: str | None = None
+    image: str | None = None
+    id_forum: int | None = None
+
+
+class GroupOut(BaseModel):
+    id_group: int
+    name: str
+    admin: int
+    description: str | None = None
+    image: str | None = None
     id_forum: int | None = None

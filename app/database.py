@@ -2,58 +2,25 @@
 from app.models import ForumIn, ForumOut
 
 
-def insert_forum(forum_in: ForumIn, id_user: int, id_game: int) -> int:
-    with mariadb.connect(**db_config) as conn:
-        with conn.cursor() as cursor:
-            sql = "INSERT INTO forums (name, id_game, id_user) VALUES (?, ?, ?)"
-            values = (forum_in.name, id_game, id_user)
-            cursor.execute(sql, values)
-            conn.commit()
-            return cursor.lastrowid
-
-
-def get_forum_by_id(forum_id: int) -> ForumOut | None:
-    with mariadb.connect(**db_config) as conn:
-        with conn.cursor() as cursor:
-            sql = (
-                "SELECT id_forum, name, id_game, id_user FROM forums WHERE id_forum = ?"
-            )
-            cursor.execute(sql, (forum_id,))
-            row = cursor.fetchone()
-            if row:
-                return ForumOut(
-                    id_forum=row[0], name=row[1], id_game=row[2], id_user=row[3]
-                )
-            return None
-
-
-def get_forums_by_game(game_id: int) -> list[ForumOut]:
-    with mariadb.connect(**db_config) as conn:
-        with conn.cursor() as cursor:
-            sql = (
-                "SELECT id_forum, name, id_game, id_user FROM forums WHERE id_game = ?"
-            )
-            cursor.execute(sql, (game_id,))
-            rows = cursor.fetchall()
-            return [
-                ForumOut(id_forum=row[0], name=row[1], id_game=row[2], id_user=row[3])
-                for row in rows
-            ]
-
-
-def delete_forum_by_id(forum_id: int) -> bool:
-    with mariadb.connect(**db_config) as conn:
-        with conn.cursor() as cursor:
-            sql = "DELETE FROM forums WHERE id_forum = ?"
-            cursor.execute(sql, (forum_id,))
-            conn.commit()
-            return cursor.rowcount > 0
-
 
 import mariadb
 
 import mariadb
-from app.models import UserDb, GameDb, GameIn, ForumIn, ForumOut, WikiIn, WikiOut 
+from app.models import (
+    AchievementIn,
+    AchievementOut,
+    ForumIn,
+    ForumOut,
+    GameDb,
+    GameIn,
+    GroupIn,
+    GroupOut,
+    TierListIn,
+    TierListOut,
+    UserDb,
+    WikiIn,
+    WikiOut,
+)
 from app.auth.auth import get_hash_password
 from app.models import GameDb, GameIn, UserDb
 
@@ -170,11 +137,30 @@ def insert_game(game: GameIn) -> int | None:
             return cursor.lastrowid
 
 
-def get_game_by_name(name: str) -> UserDb | None:
+def get_game_by_name(name: str) -> GameDb | None:
     with mariadb.connect(**db_config) as conn:
         with conn.cursor() as cursor:
             sql = "select id_game, name, gender, difficulty, rating, image, category from games where name = ?"
             cursor.execute(sql, (name,))
+            row = cursor.fetchone()
+            if row:
+                return GameDb(
+                    id_game=row[0],
+                    name=row[1],
+                    gender=row[2],
+                    difficulty=row[3],
+                    rating=row[4],
+                    image=row[5],
+                    category=row[6],
+                )
+            return None
+
+
+def get_game_by_id(game_id: int) -> GameDb | None:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "select id_game, name, gender, difficulty, rating, image, category from games where id_game = ?"
+            cursor.execute(sql, (game_id,))
             row = cursor.fetchone()
             if row:
                 return GameDb(
@@ -257,7 +243,7 @@ def get_guide_by_id(guide_id: int):
             return None
 
 
-def insert_guide(guide_in, id_user, id_forum) -> int:
+def insert_guide(guide_in, id_user, id_forum) -> int | None:
     with mariadb.connect(**db_config) as conn:
         with conn.cursor() as cursor:
             sql = "INSERT INTO guides (name, difficulty, category, id_user, id_forum) VALUES (?, ?, ?, ?, ?)"
@@ -268,7 +254,10 @@ def insert_guide(guide_in, id_user, id_forum) -> int:
                 id_user,
                 id_forum,
             )
-        
+            cursor.execute(sql, values)
+            conn.commit()
+            return cursor.lastrowid
+
 def insert_forum(forum_in: ForumIn, id_user: int, id_game: int) -> int:
     with mariadb.connect(**db_config) as conn:
         with conn.cursor() as cursor:
@@ -403,5 +392,304 @@ def delete_wiki_by_id(wiki_id: int) -> bool:
         with conn.cursor() as cursor:
             sql = "DELETE FROM wiki WHERE id_wiki = ?"
             cursor.execute(sql, (wiki_id,))
+            conn.commit()
+            return cursor.rowcount > 0
+
+
+# --- Tier list database functions ---
+
+
+def insert_tier_list(tier_list_in: TierListIn) -> int:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "INSERT INTO tier_list (name, category, description, id_forum) VALUES (?, ?, ?, ?)"
+            values = (
+                tier_list_in.name,
+                tier_list_in.category,
+                tier_list_in.description,
+                tier_list_in.id_forum,
+            )
+            cursor.execute(sql, values)
+            conn.commit()
+            return cursor.lastrowid
+
+
+def get_tier_list_by_id(tier_list_id: int) -> TierListOut | None:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "SELECT id_tl, name, category, description, id_forum FROM tier_list WHERE id_tl = ?"
+            cursor.execute(sql, (tier_list_id,))
+            row = cursor.fetchone()
+            if row:
+                return TierListOut(
+                    id_tl=row[0],
+                    name=row[1],
+                    category=row[2],
+                    description=row[3],
+                    id_forum=row[4],
+                )
+            return None
+
+
+def get_all_tier_list() -> list[TierListOut]:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "SELECT id_tl, name, category, description, id_forum FROM tier_list"
+            cursor.execute(sql)
+            rows = cursor.fetchall()
+            return [
+                TierListOut(
+                    id_tl=row[0],
+                    name=row[1],
+                    category=row[2],
+                    description=row[3],
+                    id_forum=row[4],
+                )
+                for row in rows
+            ]
+
+
+def get_tier_lists_by_forum(forum_id: int) -> list[TierListOut]:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "SELECT id_tl, name, category, description, id_forum FROM tier_list WHERE id_forum = ?"
+            cursor.execute(sql, (forum_id,))
+            rows = cursor.fetchall()
+            return [
+                TierListOut(
+                    id_tl=row[0],
+                    name=row[1],
+                    category=row[2],
+                    description=row[3],
+                    id_forum=row[4],
+                )
+                for row in rows
+            ]
+
+
+def update_tier_list_by_id(tier_list_id: int, tier_list_in: TierListIn) -> bool:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "UPDATE tier_list SET name = ?, category = ?, description = ?, id_forum = ? WHERE id_tl = ?"
+            values = (
+                tier_list_in.name,
+                tier_list_in.category,
+                tier_list_in.description,
+                tier_list_in.id_forum,
+                tier_list_id,
+            )
+            cursor.execute(sql, values)
+            conn.commit()
+            return cursor.rowcount > 0
+
+
+def delete_tier_list_by_id(tier_list_id: int) -> bool:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "DELETE FROM tier_list WHERE id_tl = ?"
+            cursor.execute(sql, (tier_list_id,))
+            conn.commit()
+            return cursor.rowcount > 0
+
+
+# --- Achievement database functions ---
+
+
+def insert_achievement(achievement_in: AchievementIn) -> int:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "INSERT INTO achievement (difficulty, description, id_game) VALUES (?, ?, ?)"
+            values = (
+                achievement_in.difficulty,
+                achievement_in.description,
+                achievement_in.id_game,
+            )
+            cursor.execute(sql, values)
+            conn.commit()
+            return cursor.lastrowid
+
+
+def get_achievement_by_id(achievement_id: int) -> AchievementOut | None:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "SELECT id_achievement, difficulty, description, id_game FROM achievement WHERE id_achievement = ?"
+            cursor.execute(sql, (achievement_id,))
+            row = cursor.fetchone()
+            if row:
+                return AchievementOut(
+                    id_achievement=row[0],
+                    difficulty=row[1],
+                    description=row[2],
+                    id_game=row[3],
+                )
+            return None
+
+
+def get_all_achievements() -> list[AchievementOut]:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "SELECT id_achievement, difficulty, description, id_game FROM achievement"
+            cursor.execute(sql)
+            rows = cursor.fetchall()
+            return [
+                AchievementOut(
+                    id_achievement=row[0],
+                    difficulty=row[1],
+                    description=row[2],
+                    id_game=row[3],
+                )
+                for row in rows
+            ]
+
+
+def get_achievements_by_game(game_id: int) -> list[AchievementOut]:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "SELECT id_achievement, difficulty, description, id_game FROM achievement WHERE id_game = ?"
+            cursor.execute(sql, (game_id,))
+            rows = cursor.fetchall()
+            return [
+                AchievementOut(
+                    id_achievement=row[0],
+                    difficulty=row[1],
+                    description=row[2],
+                    id_game=row[3],
+                )
+                for row in rows
+            ]
+
+
+def update_achievement_by_id(achievement_id: int, achievement_in: AchievementIn) -> bool:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "UPDATE achievement SET difficulty = ?, description = ?, id_game = ? WHERE id_achievement = ?"
+            values = (
+                achievement_in.difficulty,
+                achievement_in.description,
+                achievement_in.id_game,
+                achievement_id,
+            )
+            cursor.execute(sql, values)
+            conn.commit()
+            return cursor.rowcount > 0
+
+
+def delete_achievement_by_id(achievement_id: int) -> bool:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "DELETE FROM achievement WHERE id_achievement = ?"
+            cursor.execute(sql, (achievement_id,))
+            conn.commit()
+            return cursor.rowcount > 0
+
+
+# --- Groups database functions ---
+
+
+def insert_group(group_in: GroupIn, admin_id: int) -> int:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = (
+                "INSERT INTO groups_table (name, admin, description, image, id_forum) "
+                "VALUES (?, ?, ?, ?, ?)"
+            )
+            values = (
+                group_in.name,
+                admin_id,
+                group_in.description,
+                group_in.image,
+                group_in.id_forum,
+            )
+            cursor.execute(sql, values)
+            conn.commit()
+            return cursor.lastrowid
+
+
+def get_group_by_id(group_id: int) -> GroupOut | None:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = (
+                "SELECT id_group, name, admin, description, image, id_forum "
+                "FROM groups_table WHERE id_group = ?"
+            )
+            cursor.execute(sql, (group_id,))
+            row = cursor.fetchone()
+            if row:
+                return GroupOut(
+                    id_group=row[0],
+                    name=row[1],
+                    admin=row[2],
+                    description=row[3],
+                    image=row[4],
+                    id_forum=row[5],
+                )
+            return None
+
+
+def get_all_groups() -> list[GroupOut]:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "SELECT id_group, name, admin, description, image, id_forum FROM groups_table"
+            cursor.execute(sql)
+            rows = cursor.fetchall()
+            return [
+                GroupOut(
+                    id_group=row[0],
+                    name=row[1],
+                    admin=row[2],
+                    description=row[3],
+                    image=row[4],
+                    id_forum=row[5],
+                )
+                for row in rows
+            ]
+
+
+def get_groups_by_forum(forum_id: int) -> list[GroupOut]:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = (
+                "SELECT id_group, name, admin, description, image, id_forum "
+                "FROM groups_table WHERE id_forum = ?"
+            )
+            cursor.execute(sql, (forum_id,))
+            rows = cursor.fetchall()
+            return [
+                GroupOut(
+                    id_group=row[0],
+                    name=row[1],
+                    admin=row[2],
+                    description=row[3],
+                    image=row[4],
+                    id_forum=row[5],
+                )
+                for row in rows
+            ]
+
+
+def update_group_by_id(group_id: int, group_in: GroupIn) -> bool:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = (
+                "UPDATE groups_table SET name = ?, description = ?, image = ?, id_forum = ? "
+                "WHERE id_group = ?"
+            )
+            values = (
+                group_in.name,
+                group_in.description,
+                group_in.image,
+                group_in.id_forum,
+                group_id,
+            )
+            cursor.execute(sql, values)
+            conn.commit()
+            return cursor.rowcount > 0
+
+
+def delete_group_by_id(group_id: int) -> bool:
+    with mariadb.connect(**db_config) as conn:
+        with conn.cursor() as cursor:
+            sql = "DELETE FROM groups_table WHERE id_group = ?"
+            cursor.execute(sql, (group_id,))
             conn.commit()
             return cursor.rowcount > 0
